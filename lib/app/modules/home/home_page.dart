@@ -1,3 +1,4 @@
+import 'package:estocador/app/common/stores/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_triple/flutter_triple.dart';
@@ -12,7 +13,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   late final HomeStore store;
 
   @override
@@ -25,12 +25,21 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     Modular.dispose<HomeStore>();
     super.dispose();
-  }    
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Counter'),
+        title: const Text('Estocador'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Modular.get<AuthState>().sair();
+                Modular.to.pushNamedAndRemoveUntil('/', (Route rota) => false);
+              },
+              icon: const Icon(Icons.logout))
+        ],
       ),
       body: ScopedBuilder<HomeStore, Exception, int>(
         store: store,
