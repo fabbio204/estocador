@@ -1,4 +1,4 @@
-import 'package:estocador/app/common/stores/auth_state.dart';
+import 'package:estocador/app/common/stores/auth_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
@@ -22,7 +22,7 @@ class LoginPageState extends State<LoginPage> {
           Center(
             child: ElevatedButton(
               onPressed: () async {
-                await Modular.get<AuthState>().logar();
+                await Modular.get<AuthStore>().logar();
                 Modular.to.pushNamedAndRemoveUntil('/', (Route rota) => false);
               },
               child: const Text('Logar com Google'),
