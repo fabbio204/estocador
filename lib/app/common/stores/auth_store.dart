@@ -1,5 +1,4 @@
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:googleapis/sheets/v4.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 
@@ -8,6 +7,8 @@ class AuthStore {
   static const _email = 'email';
   static const _id = 'id';
   static const _planilhaId = 'planilhaId';
+  static const _accessToken = 'accessToken';
+  static const _expirationDate = 'expirationDate';
   static const chaveDb = 'dados';
 
   late Box box;
@@ -32,9 +33,17 @@ class AuthStore {
 
     GoogleSignInAccount? resultado = await signIn.signIn();
 
-    box.put(_nome, resultado?.displayName);
-    box.put(_email, resultado?.email);
-    box.put(_id, resultado?.id);
+    if (resultado == null) {
+      return;
+    }
+
+    final Map<String, String> authHeaders = await resultado.authHeaders;
+
+    setAccessToken(authHeaders);
+
+    box.put(_nome, resultado.displayName);
+    box.put(_email, resultado.email);
+    box.put(_id, resultado.id);
   }
 
   void setIdPlanilha(String id) {
@@ -43,6 +52,18 @@ class AuthStore {
 
   String getPlanilhaId() {
     return box.get(_planilhaId);
+  }
+
+  void setAccessToken(Map<String, String> accessToken) {
+    box.put(_accessToken, accessToken);
+  }
+
+  String getAccessToken() {
+    return box.get(_accessToken);
+  }
+
+  void setExpirationDate(String expirationDate) {
+    box.put(_expirationDate, expirationDate);
   }
 
   void sair() {
