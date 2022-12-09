@@ -22,14 +22,17 @@ class DriveStore {
     drive.FileList arquivos =
         await driveApi.files.list(q: "name = '$nomeArquivo'");
 
+    late drive.File arquivo;
     if (arquivos.files == null || arquivos.files!.isEmpty) {
       drive.File planilha = drive.File(
         name: nomeArquivo,
         mimeType: "application/vnd.google-apps.spreadsheet",
       );
 
-      drive.File arquivo = await driveApi.files.create(planilha);
-      store.setIdPlanilha(arquivo.id!);
+      arquivo = await driveApi.files.create(planilha);
+    } else {
+      arquivo = arquivos.files![0];
     }
+    store.setIdPlanilha(arquivo.id!);
   }
 }
