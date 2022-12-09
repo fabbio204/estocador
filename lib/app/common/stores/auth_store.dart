@@ -41,7 +41,7 @@ class AuthStore {
     box.put(_planilhaId, id);
   }
 
-  String getIdPlanilha() {
+  String getPlanilhaId() {
     return box.get(_planilhaId);
   }
 
