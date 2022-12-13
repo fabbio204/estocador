@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis_auth/googleapis_auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:googleapis_auth/googleapis_auth.dart' as gapis;
+import 'package:http/http.dart' as http;
 
 class AuthStore {
   static const _nome = 'nome';
@@ -11,6 +16,11 @@ class AuthStore {
   static const _expirationDate = 'expirationDate';
   static const chaveDb = 'dados';
 
+  static const List<String> _scopes = [
+    drive.DriveApi.driveFileScope,
+    drive.DriveApi.driveAppdataScope,
+  ];
+
   late Box box;
 
   AuthStore() {
@@ -19,10 +29,7 @@ class AuthStore {
 
   Future<GoogleSignIn> googleLogin() async {
     GoogleSignIn signIn = GoogleSignIn(
-      scopes: [
-        drive.DriveApi.driveFileScope,
-        drive.DriveApi.driveAppdataScope,
-      ],
+      scopes: _scopes,
     );
 
     return signIn;
@@ -37,9 +44,14 @@ class AuthStore {
       return;
     }
 
-    final Map<String, String> authHeaders = await resultado.authHeaders;
+    GoogleSignInAuthentication? authentication =
+        await signIn.currentUser?.authentication;
 
-    setAccessToken(authHeaders);
+    String? accessToken = authentication?.accessToken;
+
+    AuthClient auth = autenticar(accessToken!);
+
+    setClient(auth);
 
     box.put(_nome, resultado.displayName);
     box.put(_email, resultado.email);
@@ -54,12 +66,21 @@ class AuthStore {
     return box.get(_planilhaId);
   }
 
-  void setAccessToken(Map<String, String> accessToken) {
+  void setClient(AuthClient client) {
+    String accessToken = client.credentials.accessToken.data;
+    DateTime expirationDate = client.credentials.accessToken.expiry;
     box.put(_accessToken, accessToken);
+    box.put(_expirationDate, expirationDate);
   }
 
-  String getAccessToken() {
-    return box.get(_accessToken);
+  Future<AuthClient> getClient() async {
+    if (!isLogado()) {
+      await logar();
+    }
+
+    String accessToken = box.get(_accessToken);
+
+    return autenticar(accessToken);
   }
 
   void setExpirationDate(String expirationDate) {
@@ -67,10 +88,33 @@ class AuthStore {
   }
 
   void sair() {
-    box.deleteAll([_id, _email, _nome]);
+    box.deleteAll([_id, _email, _nome, _accessToken, _planilhaId]);
   }
 
   bool isLogado() {
-    return box.get(_id) != null;
+    DateTime? expirationDate = box.get(_expirationDate);
+
+    if (expirationDate == null) {
+      return false;
+    }
+
+    DateTime agora = DateTime.now().toUtc().add(const Duration(seconds: 60));
+
+    var logado = box.get(_id) != null && agora.isBefore(expirationDate);
+    return logado;
+  }
+
+  AuthClient autenticar(String accessToken) {
+    final gapis.AccessCredentials credentials = gapis.AccessCredentials(
+      gapis.AccessToken(
+        'Bearer',
+        accessToken,
+        DateTime.now().toUtc().add(const Duration(days: 30)),
+      ),
+      null, // We don't have a refreshToken
+      _scopes,
+    );
+
+    return gapis.authenticatedClient(http.Client(), credentials);
   }
 }
