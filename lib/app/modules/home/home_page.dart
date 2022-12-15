@@ -1,9 +1,10 @@
+import 'package:estocador/app/app_module.dart';
 import 'package:estocador/app/common/stores/auth_store.dart';
 import 'package:estocador/app/common/stores/drive_store.dart';
 import 'package:estocador/app/common/stores/sheet_store.dart';
+import 'package:estocador/app/modules/produtos/produtos_module.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_triple/flutter_triple.dart';
 import 'home_store.dart';
 
 class HomePage extends StatefulWidget {
@@ -56,26 +57,13 @@ class _HomePageState extends State<HomePage> {
               icon: const Icon(Icons.logout))
         ],
       ),
-      body: ScopedBuilder<HomeStore, Exception, int>(
-        store: store,
-        onState: (_, counter) {
-          return Padding(
-            padding: EdgeInsets.all(10),
-            child: Text('$counter'),
-          );
-        },
-        onError: (context, error) => Center(
-          child: Text(
-            'Too many clicks',
-            style: TextStyle(color: Colors.red),
-          ),
-        ),
-      ),
+      body: Container(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          store.increment();
+          Modular.to.pushNamed(
+              '${AppModule.rotaProdutos}${ProdutosModule.rotaCadastro}');
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
