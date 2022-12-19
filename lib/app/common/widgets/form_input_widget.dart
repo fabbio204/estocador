@@ -5,7 +5,10 @@ class FormInputWidget extends StatelessWidget {
   final String? placeholder;
   final List<TextInputFormatter>? inputFormatters;
 
-  const FormInputWidget({Key? key, this.placeholder, this.inputFormatters})
+  final Function(String) change;
+
+  const FormInputWidget(
+      {Key? key, required this.change, this.placeholder, this.inputFormatters})
       : super(key: key);
 
   @override
@@ -16,8 +19,9 @@ class FormInputWidget extends StatelessWidget {
         inputFormatters: inputFormatters,
         decoration: InputDecoration(
           labelText: placeholder,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
+        onChanged: change,
       ),
     );
   }

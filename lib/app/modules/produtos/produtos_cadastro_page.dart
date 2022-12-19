@@ -14,11 +14,16 @@ class ProdutosCadastroPage extends StatefulWidget {
 class ProdutosCadastroPageState extends State<ProdutosCadastroPage> {
   GlobalKey<FormState> form = GlobalKey<FormState>();
   late ValueNotifier<String> nomeProduto;
+  late ValueNotifier<int> quantidade;
+  late ValueNotifier<String> valor;
+
   final String _outro = 'Outro';
 
   @override
   void initState() {
     nomeProduto = ValueNotifier('');
+    quantidade = ValueNotifier(0);
+    valor = ValueNotifier('');
 
     super.initState();
   }
@@ -75,20 +80,25 @@ class ProdutosCadastroPageState extends State<ProdutosCadastroPage> {
                       valueListenable: nomeProduto,
                       builder: (context, value, child) {
                         if (nomeProduto.value == _outro) {
-                          return const FormInputWidget(
+                          return FormInputWidget(
                             placeholder: 'Digite o nome do produto',
+                            change: (valor) {
+                              nomeProduto.value = valor;
+                            },
                           );
                         }
                         return const SizedBox();
                       },
                     ),
                     FormInputWidget(
+                      change: (valor) => quantidade.value = int.parse(valor),
                       placeholder: 'Quantidade comprada',
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
                       ],
                     ),
                     FormInputWidget(
+                      change: (valor) => this.valor.value = valor,
                       placeholder: 'Valor por unidade',
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,

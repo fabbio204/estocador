@@ -6,28 +6,35 @@ import 'package:googleapis_auth/googleapis_auth.dart';
 class SheetStore {
   final String _abaProdutos = "Produtos";
   final String _abaRelatorios = "Relatorios";
+
   Future<void> inicializar() async {
+    SheetsApi api = await conectar();
+
+    await criarAba(api, _abaProdutos);
+    await criarAba(api, _abaRelatorios);
+  }
+
+  Future<SheetsApi> conectar() async {
     AuthStore store = Modular.get<AuthStore>();
 
     AuthClient auth = await store.getClient();
 
-    SheetsApi planilha = SheetsApi(auth);
+    SheetsApi api = SheetsApi(auth);   
 
-    String planilhaId = store.getPlanilhaId();
-
-    await criarAba(planilha, planilhaId, _abaProdutos);
-    await criarAba(planilha, planilhaId, _abaRelatorios);
+    return api;
   }
 
-  Future<void> criarAba(
-      SheetsApi planilhaApi, String planilhaId, String nomeAba) async {
-    Spreadsheet planilha = await planilhaApi.spreadsheets.get(planilhaId);
+  Future<void> criarAba(SheetsApi api, String nomeAba) async {
+    AuthStore store = Modular.get<AuthStore>();
+    String planilhaId = store.getPlanilhaId();
+
+    Spreadsheet planilha = await api.spreadsheets.get(planilhaId);
 
     if (planilha.sheets!.any((x) => x.properties?.title == nomeAba)) {
       return;
     }
 
-    await planilhaApi.spreadsheets.batchUpdate(
+    await api.spreadsheets.batchUpdate(
         BatchUpdateSpreadsheetRequest(
           requests: [
             Request(
