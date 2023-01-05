@@ -4,14 +4,14 @@ import 'package:googleapis/sheets/v4.dart';
 import 'package:googleapis_auth/googleapis_auth.dart';
 
 class SheetStore {
-  final String _abaProdutos = "Produtos";
-  final String _abaRelatorios = "Relatorios";
+  static const String abaProdutos = "Produtos";
+  static const String abaRelatorios = "Relatorios";
 
   Future<void> inicializar() async {
     SheetsApi api = await conectar();
 
-    await criarAba(api, _abaProdutos);
-    await criarAba(api, _abaRelatorios);
+    await criarAba(api, abaProdutos);
+    await criarAba(api, abaRelatorios);
   }
 
   Future<SheetsApi> conectar() async {

@@ -4,11 +4,16 @@ import 'package:flutter/services.dart';
 class FormInputWidget extends StatelessWidget {
   final String? placeholder;
   final List<TextInputFormatter>? inputFormatters;
+  final FormFieldValidator<String>? validator;
 
   final Function(String) change;
 
   const FormInputWidget(
-      {Key? key, required this.change, this.placeholder, this.inputFormatters})
+      {Key? key,
+      required this.change,
+      this.placeholder,
+      this.inputFormatters,
+      this.validator})
       : super(key: key);
 
   @override
@@ -22,6 +27,7 @@ class FormInputWidget extends StatelessWidget {
           border: const OutlineInputBorder(),
         ),
         onChanged: change,
+        validator: validator,
       ),
     );
   }

@@ -6,11 +6,12 @@ import 'package:estocador/app/common/stores/auth_store.dart';
 import 'package:estocador/app/common/stores/sheet_store.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:googleapis/sheets/v4.dart';
+import 'package:intl/intl.dart' as intl;
 
 class ProdutoStore implements RepositorioBase<Produto> {
   final SheetStore sheetStore;
-  late SheetsApi? _planilha;
-  late String? _idPlanilha;
+  SheetsApi? _planilha;
+  String? _idPlanilha;
 
   ProdutoStore(this.sheetStore);
 
@@ -36,18 +37,21 @@ class ProdutoStore implements RepositorioBase<Produto> {
       return [];
     }
 
-    return objetos.values!
-        .asMap()
-        .entries
-        .map((MapEntry<int, List<Object?>> e) {
+    intl.NumberFormat format = intl.NumberFormat('000,00');
+
+    List<Produto> lista = objetos.values!.asMap().entries.map((e) {
       List<Object?> item = e.value;
 
       return Produto(
         nome: item[0].toString(),
         quantidade: int.parse(item[1].toString()),
-        valor: double.parse(item[2].toString()),
+        valor: format.parse(item[2].toString()).toDouble(),
       );
     }).toList();
+
+    lista.sort((a, b) => a.nome.compareTo(b.nome));
+
+    return lista;
   }
 
   @override
@@ -74,5 +78,13 @@ class ProdutoStore implements RepositorioBase<Produto> {
       intervalo,
       valueInputOption: 'USER_ENTERED',
     );
+  }
+
+  Future<List<String>> listarProdutos() async {
+    List<Produto> produtos = await listar('${SheetStore.abaProdutos}!A1:C');
+
+    List<String> nomes = produtos.map((e) => e.nome).toList();
+
+    return nomes;
   }
 }
