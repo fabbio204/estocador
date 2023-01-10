@@ -16,13 +16,9 @@ class ProdutoStore implements RepositorioBase<Produto> {
   ProdutoStore(this.sheetStore);
 
   FutureOr<SheetsApi> iniciar() async {
-    if (_planilha == null) {
-      _planilha = await sheetStore.conectar();
-    }
+    _planilha ??= await sheetStore.conectar();
 
-    if (_idPlanilha == null) {
-      _idPlanilha = Modular.get<AuthStore>().getPlanilhaId();
-    }
+    _idPlanilha ??= Modular.get<AuthStore>().getPlanilhaId();
 
     return _planilha!;
   }
@@ -86,5 +82,26 @@ class ProdutoStore implements RepositorioBase<Produto> {
     List<String> nomes = produtos.map((e) => e.nome).toList();
 
     return nomes;
+  }
+
+  Future<int> quantidadeLinhas() async {
+    int linhaInicial = 1;
+    SheetsApi planilha = await iniciar();
+    ValueRange linhas = await planilha.spreadsheets.values
+        .get(_idPlanilha!, '${SheetStore.abaProdutos}!A1:A');
+    return linhaInicial - 1 + linhas.values!.length;
+  }
+
+  Future<void> cadastrar(Produto produto) async {
+    int proximaLinha = await quantidadeLinhas();
+    proximaLinha++;
+
+    await salvarConjunto('${SheetStore.abaProdutos}!A$proximaLinha:C$proximaLinha', [
+      [
+        produto.nome,
+        produto.quantidade,
+        produto.valor,
+      ],
+    ]);
   }
 }

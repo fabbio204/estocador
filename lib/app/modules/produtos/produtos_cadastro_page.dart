@@ -17,6 +17,7 @@ class ProdutosCadastroPage extends StatefulWidget {
 class ProdutosCadastroPageState extends State<ProdutosCadastroPage> {
   GlobalKey<FormState> formulario = GlobalKey<FormState>();
   late ValueNotifier<String> nomeProduto;
+  late ValueNotifier<String> nomeOutroProduto;
   late ValueNotifier<int> quantidade;
   late ValueNotifier<String> valor;
   late ValueNotifier<List<String>> produtos;
@@ -34,6 +35,7 @@ class ProdutosCadastroPageState extends State<ProdutosCadastroPage> {
   @override
   void initState() {
     nomeProduto = ValueNotifier('');
+    nomeOutroProduto = ValueNotifier('');
     quantidade = ValueNotifier(0);
     valor = ValueNotifier('');
     produtos = ValueNotifier([]);
@@ -103,7 +105,7 @@ class ProdutosCadastroPageState extends State<ProdutosCadastroPage> {
                           return FormInputWidget(
                             placeholder: 'Digite o nome do produto',
                             change: (valor) {
-                              nomeProduto.value = valor;
+                              nomeOutroProduto.value = valor;
                             },
                           );
                         }
@@ -140,19 +142,31 @@ class ProdutosCadastroPageState extends State<ProdutosCadastroPage> {
                       },
                     ),
                     ElevatedButton(
-                      onPressed: (() {
+                      onPressed: (() async {
                         if (formulario.currentState!.validate()) {
                           String nome = nomeProduto.value;
 
-                          double? valorFinal = double.tryParse(valor.value);
+                          if (nomeProduto.value == _outro) {
+                            nome = nomeOutroProduto.value;
+                          }
 
-                          Produto(
+                          double valorFinal =
+                              UtilBrasilFields.converterMoedaParaDouble(
+                                  valor.value);
+
+                          Produto produto = Produto(
                             nome: nome,
-                            valor: valorFinal!,
+                            valor: valorFinal,
                             quantidade: quantidade.value,
                           );
 
-                          
+                          ProdutoStore store = Modular.get<ProdutoStore>();
+
+                          await store.cadastrar(produto);
+
+                          Modular.to.popUntil(
+                            ModalRoute.withName(Modular.initialRoute),
+                          );
                         }
                       }),
                       child: const Text('Cadastrar'),
